@@ -1,18 +1,14 @@
 /*
-
-File: ImageView.m
-
-Abstract: Implements a simple NSView that draws an image with a border
-	using IIDrawImageTransformed
-
-Version: 1.0
+    File: ImageView.m
+Abstract: Declares a simple NSView that draws an image with a border using IIDrawImageTransformed
+ Version: 1.2
 
 Disclaimer: IMPORTANT:  This Apple software is supplied to you by Apple
-Inc. ("Apple") in consideration of your agreement to the
-following terms, and your use, installation, modification or
-redistribution of this Apple software constitutes acceptance of these
-terms.  If you do not agree with these terms, please do not use,
-install, modify or redistribute this Apple software.
+Inc. ("Apple") in consideration of your agreement to the following
+terms, and your use, installation, modification or redistribution of
+this Apple software constitutes acceptance of these terms.  If you do
+not agree with these terms, please do not use, install, modify or
+redistribute this Apple software.
 
 In consideration of your agreement to abide by the following terms, and
 subject to these terms, Apple grants you a personal, non-exclusive
@@ -21,14 +17,14 @@ license, under Apple's copyrights in this original Apple software (the
 Software, with or without modifications, in source and/or binary forms;
 provided that if you redistribute the Apple Software in its entirety and
 without modifications, you must retain this notice and the following
-text and disclaimers in all such redistributions of the Apple Software. 
-Neither the name, trademarks, service marks or logos of Apple Computer,
-Inc. may be used to endorse or promote products derived from the Apple
-Software without specific prior written permission from Apple.  Except
-as expressly stated in this notice, no other rights or licenses, express
-or implied, are granted by Apple herein, including but not limited to
-any patent rights that may be infringed by your derivative works or by
-other works in which the Apple Software may be incorporated.
+text and disclaimers in all such redistributions of the Apple Software.
+Neither the name, trademarks, service marks or logos of Apple Inc. may
+be used to endorse or promote products derived from the Apple Software
+without specific prior written permission from Apple.  Except as
+expressly stated in this notice, no other rights or licenses, express or
+implied, are granted by Apple herein, including but not limited to any
+patent rights that may be infringed by your derivative works or by other
+works in which the Apple Software may be incorporated.
 
 The Apple Software is provided by Apple on an "AS IS" basis.  APPLE
 MAKES NO WARRANTIES, EXPRESS OR IMPLIED, INCLUDING WITHOUT LIMITATION
@@ -45,30 +41,13 @@ AND WHETHER UNDER THEORY OF CONTRACT, TORT (INCLUDING NEGLIGENCE),
 STRICT LIABILITY OR OTHERWISE, EVEN IF APPLE HAS BEEN ADVISED OF THE
 POSSIBILITY OF SUCH DAMAGE.
 
-Copyright © 2007 Apple Inc., All Rights Reserved
+Copyright (C) 2010 Apple Inc. All Rights Reserved.
 
 */
 
 #import "ImageView.h"
 
-enum
-{
-	kDragOperationNone = 0,
-	kDragOperationScale = 1,
-	kDragOperationRotate = 2,
-	kDragOperationTranslate = 3
-};
-
 @implementation ImageView
-
--(id)initWithFrame:(NSRect)frame
-{
-	self = [super initWithFrame:frame];
-	if(self != nil)
-	{
-	}
-	return self;
-}
 
 -(void)dealloc
 {
@@ -103,10 +82,10 @@ enum
 	CGContextRef ctx = (CGContextRef)[[NSGraphicsContext currentContext] graphicsPort];
 	
 	// Draw the image in the context
-	IIDrawImageTransformed(image, ctx, CGRectMake(rect.origin.x, rect.origin.y, rect.size.width, rect.size.height));
+	IIDrawImageTransformed(image, ctx, NSRectToCGRect(self.bounds));
 
 	// Draw the view border, just a simple stroked rectangle
-	CGContextAddRect(ctx, CGRectMake(rect.origin.x, rect.origin.y, rect.size.width, rect.size.height));
+	CGContextAddRect(ctx, NSRectToCGRect(self.bounds));
 	CGContextSetRGBStrokeColor(ctx, 1.0f, 0.0f, 0.0f, 1.0f);
 	CGContextStrokePath(ctx);
 }

@@ -1,18 +1,14 @@
 /*
-
-File: Controller.h
-
-Abstract: Handles initialization of the ImageView as well as communication
-	between other controls and the ImageView's Image
-
-Version: 1.0
+    File: Controller.h
+Abstract: Handles initialization of the ImageView as well as communication between other controls and the ImageView's Image
+ Version: 1.2
 
 Disclaimer: IMPORTANT:  This Apple software is supplied to you by Apple
-Inc. ("Apple") in consideration of your agreement to the
-following terms, and your use, installation, modification or
-redistribution of this Apple software constitutes acceptance of these
-terms.  If you do not agree with these terms, please do not use,
-install, modify or redistribute this Apple software.
+Inc. ("Apple") in consideration of your agreement to the following
+terms, and your use, installation, modification or redistribution of
+this Apple software constitutes acceptance of these terms.  If you do
+not agree with these terms, please do not use, install, modify or
+redistribute this Apple software.
 
 In consideration of your agreement to abide by the following terms, and
 subject to these terms, Apple grants you a personal, non-exclusive
@@ -21,14 +17,14 @@ license, under Apple's copyrights in this original Apple software (the
 Software, with or without modifications, in source and/or binary forms;
 provided that if you redistribute the Apple Software in its entirety and
 without modifications, you must retain this notice and the following
-text and disclaimers in all such redistributions of the Apple Software. 
-Neither the name, trademarks, service marks or logos of Apple Computer,
-Inc. may be used to endorse or promote products derived from the Apple
-Software without specific prior written permission from Apple.  Except
-as expressly stated in this notice, no other rights or licenses, express
-or implied, are granted by Apple herein, including but not limited to
-any patent rights that may be infringed by your derivative works or by
-other works in which the Apple Software may be incorporated.
+text and disclaimers in all such redistributions of the Apple Software.
+Neither the name, trademarks, service marks or logos of Apple Inc. may
+be used to endorse or promote products derived from the Apple Software
+without specific prior written permission from Apple.  Except as
+expressly stated in this notice, no other rights or licenses, express or
+implied, are granted by Apple herein, including but not limited to any
+patent rights that may be infringed by your derivative works or by other
+works in which the Apple Software may be incorporated.
 
 The Apple Software is provided by Apple on an "AS IS" basis.  APPLE
 MAKES NO WARRANTIES, EXPRESS OR IMPLIED, INCLUDING WITHOUT LIMITATION
@@ -45,7 +41,7 @@ AND WHETHER UNDER THEORY OF CONTRACT, TORT (INCLUDING NEGLIGENCE),
 STRICT LIABILITY OR OTHERWISE, EVEN IF APPLE HAS BEEN ADVISED OF THE
 POSSIBILITY OF SUCH DAMAGE.
 
-Copyright © 2007 Apple Inc., All Rights Reserved
+Copyright (C) 2010 Apple Inc. All Rights Reserved.
 
 */
 
@@ -61,11 +57,11 @@ Copyright © 2007 Apple Inc., All Rights Reserved
 	IBOutlet NSTextField * textScaleYView;
 	IBOutlet NSTextField * textLabelXView;
 	IBOutlet NSTextField * textLabelYView;
-	float rotation;
-	float scaleX;
-	float scaleY;
-	float translateX;
-	float translateY;
+	CGFloat rotation;
+	CGFloat scaleX;
+	CGFloat scaleY;
+	CGFloat translateX;
+	CGFloat translateY;
 	BOOL preserveAspectRatio;
 	NSMutableArray * openImageIOSupportedTypes;
 }
@@ -77,22 +73,20 @@ Copyright © 2007 Apple Inc., All Rights Reserved
 -(IBAction)reset:(id)sender;
 -(IBAction)openDocument:(id)sender;
 -(IBAction)saveDocumentAs:(id)sender;
--(void)openImageDidEnd:(NSOpenPanel*)panel returnCode:(int)returnCode contextInfo:(void*)contextInfo;
--(void)saveImageDidEnd:(NSSavePanel*)panel returnCode:(int)returnCode contextInfo:(void*)contextInfo;
 
--(void)setRotation:(float)r;
--(void)setScaleX:(float)x;
--(void)setScaleY:(float)y;
--(void)setScaleX:(float)x andY:(float)y;
+-(void)setRotation:(CGFloat)r;
+-(void)setScaleX:(CGFloat)x;
+-(void)setScaleY:(CGFloat)y;
+-(void)setScaleX:(CGFloat)x andY:(CGFloat)y;
 -(void)setPreserveAspectRatio:(BOOL)preserve;
--(void)setTranslateX:(float)x;
--(void)setTranslateY:(float)y;
--(void)setTranslateX:(float)x andY:(float)y;
+-(void)setTranslateX:(CGFloat)x;
+-(void)setTranslateY:(CGFloat)y;
+-(void)setTranslateX:(CGFloat)x andY:(CGFloat)y;
 -(void)resetTransformations;
 -(float)rotation;
--(float)scaleX;
--(float)scaleY;
+-(CGFloat)scaleX;
+-(CGFloat)scaleY;
 -(BOOL)preserveAspectRatio;
--(float)translateX;
--(float)translateY;
+-(CGFloat)translateX;
+-(CGFloat)translateY;
 @end

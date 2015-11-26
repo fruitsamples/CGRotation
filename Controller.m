@@ -1,18 +1,14 @@
 /*
-
-File: Controller.m
-
-Abstract: Handles initialization of the ImageView as well as communication
-	between other controls and the ImageView's Image
-
-Version: 1.0
+    File: Controller.m
+Abstract: Handles initialization of the ImageView as well as communication between other controls and the ImageView's Image
+ Version: 1.2
 
 Disclaimer: IMPORTANT:  This Apple software is supplied to you by Apple
-Inc. ("Apple") in consideration of your agreement to the
-following terms, and your use, installation, modification or
-redistribution of this Apple software constitutes acceptance of these
-terms.  If you do not agree with these terms, please do not use,
-install, modify or redistribute this Apple software.
+Inc. ("Apple") in consideration of your agreement to the following
+terms, and your use, installation, modification or redistribution of
+this Apple software constitutes acceptance of these terms.  If you do
+not agree with these terms, please do not use, install, modify or
+redistribute this Apple software.
 
 In consideration of your agreement to abide by the following terms, and
 subject to these terms, Apple grants you a personal, non-exclusive
@@ -21,14 +17,14 @@ license, under Apple's copyrights in this original Apple software (the
 Software, with or without modifications, in source and/or binary forms;
 provided that if you redistribute the Apple Software in its entirety and
 without modifications, you must retain this notice and the following
-text and disclaimers in all such redistributions of the Apple Software. 
-Neither the name, trademarks, service marks or logos of Apple Computer,
-Inc. may be used to endorse or promote products derived from the Apple
-Software without specific prior written permission from Apple.  Except
-as expressly stated in this notice, no other rights or licenses, express
-or implied, are granted by Apple herein, including but not limited to
-any patent rights that may be infringed by your derivative works or by
-other works in which the Apple Software may be incorporated.
+text and disclaimers in all such redistributions of the Apple Software.
+Neither the name, trademarks, service marks or logos of Apple Inc. may
+be used to endorse or promote products derived from the Apple Software
+without specific prior written permission from Apple.  Except as
+expressly stated in this notice, no other rights or licenses, express or
+implied, are granted by Apple herein, including but not limited to any
+patent rights that may be infringed by your derivative works or by other
+works in which the Apple Software may be incorporated.
 
 The Apple Software is provided by Apple on an "AS IS" basis.  APPLE
 MAKES NO WARRANTIES, EXPRESS OR IMPLIED, INCLUDING WITHOUT LIMITATION
@@ -45,12 +41,21 @@ AND WHETHER UNDER THEORY OF CONTRACT, TORT (INCLUDING NEGLIGENCE),
 STRICT LIABILITY OR OTHERWISE, EVEN IF APPLE HAS BEEN ADVISED OF THE
 POSSIBILITY OF SUCH DAMAGE.
 
-Copyright © 2007 Apple Inc., All Rights Reserved
+Copyright (C) 2010 Apple Inc. All Rights Reserved.
 
 */
 
 #import "Controller.h"
 #import "ImageView.h"
+#include <tgmath.h>
+
+@interface Controller()
+
+-(void)openImageDidEnd:(NSOpenPanel*)panel returnCode:(NSInteger)returnCode contextInfo:(void*)contextInfo;
+-(void)saveImageDidEnd:(NSSavePanel*)panel returnCode:(NSInteger)returnCode contextInfo:(void*)contextInfo;
+
+@end
+
 
 @implementation Controller
 
@@ -122,6 +127,37 @@ Copyright © 2007 Apple Inc., All Rights Reserved
 {
 	[self resetTransformations];
 	[imageView setNeedsDisplay:YES];
+}
+
+- (BOOL)canOpenURLWithImageIO:(NSURL*)fileURL
+{
+	BOOL imageFile = NO;
+	NSString *uti = nil;
+	NSWorkspace *workspace = [NSWorkspace sharedWorkspace];
+	if([fileURL respondsToSelector:@selector(getResourceValue:forKey:error:)])
+	{
+		// Prefer to get the UTI directly from the URL when available (10.6).
+		[fileURL getResourceValue:&uti forKey:NSURLTypeIdentifierKey error:nil];
+	}
+	else
+	{
+		// Otherwise get a path string and ask NSWorkspace to give us this information (10.5).
+		// TODO: verify this is the right way to get the file system path
+		uti = [workspace typeOfFile:[fileURL path] error:nil];
+	}
+	if((uti != nil) && ([workspace type:uti conformsToType:(NSString*)kUTTypeImage]))
+	{
+		NSArray *supportedTypes = [NSMakeCollectable(CGImageSourceCopyTypeIdentifiers()) autorelease];
+		for(NSString *supportedUTI in supportedTypes)
+		{
+			if([workspace type:uti conformsToType:supportedUTI])
+			{
+				imageFile = YES;
+				break;
+			}
+		}
+	}
+	return imageFile;
 }
 
 // Returns an array with the extensions that match the given Uniform Type Identifier (UTI).
@@ -205,7 +241,7 @@ Copyright © 2007 Apple Inc., All Rights Reserved
 		
 }
 
--(void)openImageDidEnd:(NSOpenPanel*)panel returnCode:(int)returnCode contextInfo:(void*)contextInfo
+-(void)openImageDidEnd:(NSOpenPanel*)panel returnCode:(NSInteger)returnCode contextInfo:(void*)contextInfo
 {
 	if(returnCode == NSOKButton)
 	{
@@ -226,7 +262,7 @@ Copyright © 2007 Apple Inc., All Rights Reserved
 {
 	NSSavePanel * panel = [NSSavePanel savePanel];
 	[panel setCanSelectHiddenExtension:YES];
-	[panel setRequiredFileType:@"jpeg"];
+	[panel setRequiredFileType:@"png"];
 	[panel setAllowsOtherFileTypes:NO];
 	[panel setTreatsFilePackagesAsDirectories:YES];
 	
@@ -239,7 +275,7 @@ Copyright © 2007 Apple Inc., All Rights Reserved
 		contextInfo:nil];
 }
 
--(void)saveImageDidEnd:(NSSavePanel*)panel returnCode:(int)returnCode contextInfo:(void*)contextInfo
+-(void)saveImageDidEnd:(NSSavePanel*)panel returnCode:(NSInteger)returnCode contextInfo:(void*)contextInfo
 {
 	if(returnCode == NSOKButton)
 	{
@@ -248,58 +284,49 @@ Copyright © 2007 Apple Inc., All Rights Reserved
 	}
 }
 
--(void)setRotation:(float)r
+-(void)setRotation:(CGFloat)r
 {
-	if(r >= 360.0f)
+	r = fmodf(r, 360.0f);
+	if(r < 0.0f)
 	{
-		while(r >= 360.0f)
-		{
-			r -= 360.0f;
-		}
-	}
-	else if(r < 0.0f)
-	{
-		while(r < 0.0f)
-		{
-			r += 360.0f;
-		}
+		r += 360.0f;
 	}
 	rotation = r;
-	[imageView image]->fRotation = 360.0f - r;
+	[imageView image]->rotation = 360.0f - r;
 	[imageView setNeedsDisplay:YES];
 }
 
--(void)setScaleX:(float)x
+-(void)setScaleX:(CGFloat)x
 {
-	[imageView image]->fScaleX = scaleX = x;
+	[imageView image]->scaleX = scaleX = x;
 	if(preserveAspectRatio)
 	{
-		[imageView image]->fScaleY = scaleX;
+		[imageView image]->scaleY = scaleX;
 	}
 	[imageView setNeedsDisplay:YES];
 }
 
--(void)setScaleY:(float)y
+-(void)setScaleY:(CGFloat)y
 {
 	scaleY = y;
 	if(!preserveAspectRatio)
 	{
-		[imageView image]->fScaleY = scaleY;
+		[imageView image]->scaleY = scaleY;
 		[imageView setNeedsDisplay:YES];
 	}
 }
 
--(void)setScaleX:(float)x andY:(float)y
+-(void)setScaleX:(CGFloat)x andY:(CGFloat)y
 {
-	[imageView image]->fScaleX = scaleX = x;
+	[imageView image]->scaleX = scaleX = x;
 	scaleY = y;
 	if(preserveAspectRatio)
 	{
-		[imageView image]->fScaleY = scaleX;
+		[imageView image]->scaleY = scaleX;
 	}
 	else
 	{
-		[imageView image]->fScaleY = scaleY;
+		[imageView image]->scaleY = scaleY;
 	}
 	[imageView setNeedsDisplay:YES];
 }
@@ -307,14 +334,14 @@ Copyright © 2007 Apple Inc., All Rights Reserved
 -(void)setPreserveAspectRatio:(BOOL)preserve
 {
 	preserveAspectRatio = preserve;
-	[imageView image]->fScaleX = scaleX;
+	[imageView image]->scaleX = scaleX;
 	if(preserveAspectRatio)
 	{
-		[imageView image]->fScaleY = scaleX;
+		[imageView image]->scaleY = scaleX;
 	}
 	else
 	{
-		[imageView image]->fScaleY = scaleY;
+		[imageView image]->scaleY = scaleY;
 	}
 	[scaleYView setHidden:preserveAspectRatio];
 	[textScaleYView setHidden:preserveAspectRatio];
@@ -323,22 +350,22 @@ Copyright © 2007 Apple Inc., All Rights Reserved
 	[imageView setNeedsDisplay:YES];
 }
 
--(void)setTranslateX:(float)x
+-(void)setTranslateX:(CGFloat)x
 {
-	[imageView image]->fTranslateX = translateX = x;
+	[imageView image]->translateX = translateX = x;
 	[imageView setNeedsDisplay:YES];
 }
 
--(void)setTranslateY:(float)y
+-(void)setTranslateY:(CGFloat)y
 {
-	[imageView image]->fTranslateY = translateY = y;
+	[imageView image]->translateY = translateY = y;
 	[imageView setNeedsDisplay:YES];
 }
 
--(void)setTranslateX:(float)x andY:(float)y
+-(void)setTranslateX:(CGFloat)x andY:(CGFloat)y
 {
-	[imageView image]->fTranslateX = translateX = x;
-	[imageView image]->fTranslateY = translateY = y;
+	[imageView image]->translateX = translateX = x;
+	[imageView image]->translateY = translateY = y;
 	[imageView setNeedsDisplay:YES];
 }
 
@@ -354,12 +381,12 @@ Copyright © 2007 Apple Inc., All Rights Reserved
 	return rotation;
 }
 
--(float)scaleX
+-(CGFloat)scaleX
 {
 	return scaleX;
 }
 
--(float)scaleY
+-(CGFloat)scaleY
 {
 	return scaleY;
 }
@@ -369,12 +396,12 @@ Copyright © 2007 Apple Inc., All Rights Reserved
 	return preserveAspectRatio;
 }
 
--(float)translateX
+-(CGFloat)translateX
 {
 	return translateX;
 }
 
--(float)translateY
+-(CGFloat)translateY
 {
 	return translateY;
 }
